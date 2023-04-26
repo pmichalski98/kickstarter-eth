@@ -8,8 +8,8 @@ interface HomeProps {
 }
 const Home: NextPage = ({ campaigns }: HomeProps) => {
   return (
-    <Layout>
-      <h1>Open campaigns</h1>
+      <>
+      <h1 className="text-3xl mb-10">Open campaigns</h1>
       <div className="flex gap-10">
         {campaigns.map((address) => (
           <div
@@ -29,7 +29,7 @@ const Home: NextPage = ({ campaigns }: HomeProps) => {
           Create Campaign
         </button>
       </div>
-    </Layout>
+    </>
   );
 };
 

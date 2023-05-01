@@ -3,7 +3,7 @@ import Link from "next/link";
 interface Props {
     href: string,
     children: ReactNode
-    className:string,
+    className?:string,
 }
 const MyLink = (props:Props) => {
     const classes = `tranisition hover:text-slate-400 ${props.className}`;

@@ -8,9 +8,9 @@ interface HomeProps {
 }
 const Home: NextPage = ({ campaigns }: HomeProps) => {
   return (
-      <>
-      <h1 className="text-3xl mb-10">Open campaigns</h1>
-      <div className="flex gap-10">
+      <section className="mx-auto w-11/12">
+      <h1 className="text-5xl mb-10 text-rose-300">Open campaigns</h1>
+      <div className="flex flex-col lg:grid grid-cols-2  gap-10">
         {campaigns.map((address) => (
           <div
             key={address}
@@ -19,17 +19,17 @@ const Home: NextPage = ({ campaigns }: HomeProps) => {
             <h1 className="font-bold">{address}</h1>
             <MyLink
               className="w-fit rounded p-1 text-blue-400 outline-1 transition hover:text-rose-300 hover:shadow "
-              href="/campaign"
+              href={`/campaigns/${address}`}
             >
               View Campaign
             </MyLink>
           </div>
         ))}
-        <button className="self-center rounded bg-rose-500 px-3 py-1.5 text-lg text-slate-100 hover:bg-rose-400">
-          Create Campaign
+        <button className="col-span-2 w-1/3 mx-auto self-center rounded bg-rose-500 px-3 py-1.5 text-lg text-slate-100 hover:bg-rose-400">
+          <Link href="/campaigns/add">Create Campaign</Link>
         </button>
       </div>
-    </>
+    </section>
   );
 };
 

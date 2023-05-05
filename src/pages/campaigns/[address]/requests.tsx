@@ -6,39 +6,69 @@ import campaign from "~/ethereum/campaign";
 import {ClipLoader} from "react-spinners";
 import web3 from "~/ethereum/web3";
 import ReqTable from "~/components/ReqTable";
-const Requests:NextPage = ({requests}) => {
+import type Contract from "web3-eth-contract";
+
+interface Req {
+    description: string,
+    vender: string,
+    approvalCount: string,
+    value: string,
+}
+
+interface Props {
+    requests: Req[],
+    approversCount: string,
+}
+
+const Requests: NextPage = ({requests, approversCount}: Props) => {
     const [isLoading, setIsLoading] = useState(false);
     const router = useRouter()
+
+    async function handleApprove(index:number) {
+        const cam: Contract = campaign(router.query.address);
+        const accounts = await web3.eth.getAccounts();
+        await cam.methods.approveRequest(index).send({
+                from: accounts[0],
+            }
+        )
+        await router.replace(`/campaigns/${router.query.address}/requests`)
+    }
+    async function handleFinalize() {
+    }
 
     const config = [
         {
             label: 'Id',
-            render: (request, index: number) => index + 1
+            render: (request: Req, index: number) => index + 1
         },
         {
             label: 'Description',
-            render: (request) => request.description
+            render: (request: Req) => request.description
         },
         {
             label: 'Vender',
-            render: (request) => request.vender.toString().slice(0,8).concat('...')
+            render: (request: Req) => request.vender.toString().slice(0, 8).concat('...')
         },
         {
             label: 'Approvals',
-            render: (request) => request.approvalCount
+            render: (request: Req) => request.approvalCount.concat('/').concat(approversCount)
         },
         {
             label: 'Value',
-            render: (request) => request.value.concat(' eth')
+            render: (request: Req) => request.value.concat(' eth')
         },
         {
             label: 'Approve',
-            render: () =>  <button className="bg-green-300 hover:bg-green-400 rounded px-3 py-1.5 text-2xl text-white" type="submit">
+            render: (request, index:number) => <button
+                onClick={() => handleApprove(index)}
+                className="bg-green-500 hover:bg-green-300 rounded px-3 py-1.5 text-xl text-white">
                 {!isLoading ? 'Approve' : <ClipLoader color="white"/>}</button>
         },
         {
             label: 'Finalize',
-            render: () =>  <button className="bg-rose-500 hover:bg-rose-400 rounded px-3 py-1.5 text-2xl text-white" type="submit">
+            render: () => <button
+                onClick={handleFinalize}
+                className="bg-rose-600 hover:bg-rose-400 rounded px-3 py-1.5 text-xl text-white">
                 {!isLoading ? 'Finalize' : <ClipLoader color="white"/>}</button>
         },
     ]
@@ -51,25 +81,26 @@ const Requests:NextPage = ({requests}) => {
                 href={`/campaigns/${router.query.address}/requests/new`}>
                 Add request
             </MyLink>
-            <div className=" text-center text-lg grid lg:grid-cols-7 items-center gap-4 mt-10 rounded p-4 bg-slate-500/60 font-bold text-gray-900">
-            <ReqTable config={config} data={requests}/>
+            <div
+                className=" text-center text-lg grid lg:grid-cols-7 items-center gap-4 mt-10 rounded p-4 bg-slate-500/60 font-bold text-gray-900">
+                <ReqTable config={config} data={requests}/>
             </div>
         </section>
     );
 };
 
 Requests.getInitialProps = async (ctx) => {
-    const cam = campaign(ctx.query.address);
+    const cam: Contract = campaign(ctx.query.address);
     const reqCount = await cam.methods.getRequestCount().call();
+    const approversCount = await cam.methods.approversCount().call();
 
-    const requests = await Promise.all(
+    const requests: Req[] = await Promise.all(
         Array(parseInt(reqCount))
             .fill(reqCount)
             .map((element, index) => {
                 return cam.methods.requests(index).call();
-        })
+            })
     )
-    console.log(requests)
-    return { requests }
+    return {requests, approversCount, cam};
 }
 export default Requests;
